@@ -1,9 +1,10 @@
-var dbConn = require('../utils/connect');
+const mail = require('../utils/mail');
+const dbConn = require('../utils/connect');
 
 //Schedule object 
-var Schedule = function(schedule){
+const Schedule = function(schedule){
     this.interviewerName    = schedule.interviewerName;
-    this.intervieweeName    = schedule.interviewee;
+    this.intervieweeName    = schedule.intervieweeName;
     this.interviewerEmail   = schedule.interviewerEmail;
     this.intervieweeEmail   = schedule.intervieweeEmail;
     this.date               = schedule.date;
@@ -21,6 +22,9 @@ Schedule.create = (newSchedule, result) => {
         }
         else{
             console.log(res.insertId);
+            // send email when interview scheduled
+            let subject = "Interview scheduled";
+            // mail.sendEmail(newSchedule, subject);
             result(null, res.insertId);
         }
     });           
