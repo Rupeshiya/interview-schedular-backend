@@ -33,6 +33,12 @@ app.use(cookieParser())
 app.use(helmet())
 app.use(hpp())
 
+app.get('/test', (req, res) => {
+  return res.status(200).json({
+    msg: 'Working perfectly'
+  })
+})
+
 app.use('/admin', adminRouter)
 
 // catch 404 and forward to error handler
