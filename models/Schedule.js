@@ -31,7 +31,7 @@ Schedule.create = (newSchedule, result) => {
 };
 
 Schedule.findById = (id, result) => {
-    let query = "Select * from schedule where id = ? ";
+    let query = "SELECT * FROM schedule WHERE id = ? ";
     dbConn.query(query, id, (err, res) => {             
         if(err) {
             console.log("error: ", err);
@@ -44,7 +44,7 @@ Schedule.findById = (id, result) => {
 };
 
 Schedule.findAll = (result) => {
-    let query = "Select * from schedule";
+    let query = "SELECT * FROM schedule";
     dbConn.query(query, (err, res) => {
         if(err) {
             console.log("error: ", err);
@@ -56,5 +56,9 @@ Schedule.findAll = (result) => {
         }
     });   
 };
+
+Schedule.sendInterviewReminder = () => {
+    let query = "SELECT * FROM schedule"
+}
 
 module.exports = Schedule;

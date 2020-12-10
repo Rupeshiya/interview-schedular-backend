@@ -1,3 +1,4 @@
+require('dotenv').config()
 const express = require('express')
 const morgan = require('morgan')
 const cookieParser = require('cookie-parser')
@@ -10,6 +11,8 @@ var winston = require('./config/winston')
 const app = express()
 const PORT = process.env.PORT || 5000;
 const adminRouter = require('./router/adminRouter');
+const Formidable = require('formidable');
+const cloudinary = require("cloudinary");
 
 app.use(cors());
 
@@ -60,6 +63,28 @@ app.use(function (err, req, res, next) {
   // render the error page
   res.status(err.status || 500)
   next()
+})
+
+cloudinary.config({
+    cloud_name: 'devilhack',
+    api_key: '583496858434235',
+    api_secret: 'OmKipCSKDnHol4ur-fFTbo07XZw'
+});
+
+app.post('/upload', (req, res, next) => {
+  // parse a file upload
+    const form = new Formidable();
+    form.parse(req, (err, fields, files) => {
+        cloudinary.uploader.upload(files.upload.path, result => {
+            console.log(result)
+            if (result.public_id) {
+                return res.json({
+                  url: result.url
+                })
+            }
+        }
+        );
+    });
 })
 
 app.listen(PORT, () => {

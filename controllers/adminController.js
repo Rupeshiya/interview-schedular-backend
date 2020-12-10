@@ -1,5 +1,8 @@
 const Schedule = require('../models/Schedule');
 const HTTP_STATUS = require('http-status-codes');
+const cloudinaryConfig = require('../config/cloudinary');
+var cloudinary = require('cloudinary').v2;
+const Formidable = require('formidable');
 
 module.exports = {
   // to schedule Interview
