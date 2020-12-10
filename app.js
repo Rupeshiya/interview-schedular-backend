@@ -1,3 +1,4 @@
+require('dotenv').config()
 const express = require('express')
 const morgan = require('morgan')
 const cookieParser = require('cookie-parser')
@@ -10,16 +11,29 @@ var winston = require('./config/winston')
 const app = express()
 const PORT = process.env.PORT || 5000;
 const adminRouter = require('./router/adminRouter');
+const dbConn = require('./utils/connect');
+const emailer = require('./utils/mail');
+const Formidable = require('formidable');
+const cron = require("node-cron");
+
+const cloudinary = require("cloudinary");
+cloudinary.config({
+    cloud_name: 'devilhack',
+    api_key: '583496858434235',
+    api_secret: 'OmKipCSKDnHol4ur-fFTbo07XZw'
+});
+
 
 app.use(cors());
-
 app.use(bodyParser.json({ limit: '200mb' }))
 app.use(cookieParser())
 
+// app logger (for debugging)
 morgan.token('data', (req, res) => {
   return JSON.stringify(req.body)
 })
 
+// logging to log file
 app.use(
   morgan(
     ':remote-addr - :remote-user [:date[clf]] ":method :url" :status :res[content-length] ":referrer" ":user-agent" :data',
@@ -33,7 +47,80 @@ app.use(cookieParser())
 app.use(helmet())
 app.use(hpp())
 
+app.get('/test', (req, res) => {
+  return res.status(200).json({
+    msg: 'Working perfectly'
+  })
+})
+
 app.use('/admin', adminRouter)
+
+app.post('/upload', (req, res, next) => {
+  // parse a file upload
+    const form = new Formidable();
+    console.log('form ', form)
+    form.parse(req, (err, field, files) => {
+        cloudinary.uploader.upload(files.upload.path, result => {
+            console.log(result)
+            if (result.public_id) {
+                return res.json({
+                  url: result.url
+                })
+            }
+          }
+        );
+    });
+})
+
+// Scheduled tasks to be run on the server.
+const job = cron.schedule('*/10 * * * *', () => {
+    console.log('running a task every 10 minute');
+    // schedule interview reminder
+    let today = new Date();
+    let dd = String(today.getDate()).padStart(2, '0');
+    let mm = String(today.getMonth() + 1).padStart(2, '0'); //January is 0!
+    let yyyy = today.getFullYear();
+
+    let d = new Date(); 
+    let hr = d.getHours(); 
+    let mn = d.getMinutes(); 
+    let ss = d.getSeconds(); 
+
+    today = yyyy + '-' + mm + '-' + dd;
+    currentTime = hr + ":" + mn + ":" + ":" + ss;
+    let query = `SELECT * FROM schedule WHERE date = "${today}"`;
+    dbConn.query(query, (err, data) => {
+        // to access RowDataPacket
+        data = JSON.parse(JSON.stringify(data))
+        
+        // iterate over today's interviews 
+        data.forEach((schedule) => {
+          // calculate time diff from currentTime
+          let timeDiffQuery = `SELECT TIMEDIFF("${schedule.start}", "${currentTime}") AS minute`;
+          
+          // filter out the schedule which is going to be scheduled in 10 mins
+          dbConn.query(timeDiffQuery, (err, response) => {
+              // access RowDataPacket
+              response = JSON.parse(JSON.stringify(response))
+              let temp = response[0].minute;
+              let minArr = temp.split(":");
+              let min = minArr[1];
+              let hr = minArr[0];
+
+              // discard the prev period data 
+              if((Math.sign(hr) == -1 || Math.sign(hr) == -0) && min == 01) {
+                console.log('Sending interview remainder email');
+                // send reminder email 
+                let sub = "Interview reminder";
+                emailer.sendEmail(schedule, sub);
+              }
+          })
+        })
+    })
+});
+
+// stop the cron-job 
+// job.stop();
 
 // catch 404 and forward to error handler
 app.use(function (req, res, next) {

@@ -1,14 +1,12 @@
 const express = require('express');
 const router = express.Router();
 const AdminController = require('../controllers/adminController');
+const checkOverlap = require('../middlewares/checkOverlap');
 
 // create an interview 
-router.post('/schedule', AdminController.scheduleInterview);
+router.post('/schedule', checkOverlap, AdminController.scheduleInterview);
 
-// update an interview schedule 
-router.patch('/schedule', AdminController.updateInterview);
-
-// cancel an interview 
-router.post('/cancel', AdminController.cancelInterview);
+// get all interview scheduled by admin 
+router.get('/all', AdminController.getAllScheduledInterview);
 
 module.exports = router;
