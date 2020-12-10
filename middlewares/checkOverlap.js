@@ -1,6 +1,7 @@
 const dbConn = require('../utils/connect')
 const HTTP_STATUS = require('http-status-codes');
 
+// middleware to check schedule overlapping
 const checkOverlap = async (req, res, next) => {
   try {
     const { intervieweeEmail, date, start } = req.body;

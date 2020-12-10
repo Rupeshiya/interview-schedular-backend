@@ -1,13 +1,11 @@
 const Schedule = require('../models/Schedule');
 const HTTP_STATUS = require('http-status-codes');
-const cloudinaryConfig = require('../config/cloudinary');
-var cloudinary = require('cloudinary').v2;
-const Formidable = require('formidable');
 
 module.exports = {
   // to schedule Interview
   scheduleInterview: async(req, res, next) => {
    try {
+     console.log('create schedule ', req.body)
      const new_schedule = new Schedule(req.body);
       //handles null error 
     if(req.body.constructor === Object && Object.keys(req.body).length === 0){

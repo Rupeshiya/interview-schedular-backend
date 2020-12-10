@@ -10,7 +10,7 @@ const Schedule = function(schedule){
     this.date               = schedule.date;
     this.start              = schedule.start;
     this.end                = schedule.end;
-    this.resume             = schedule.resumeLink;
+    this.resume             = schedule.resume;
 };
 
 Schedule.create = (newSchedule, result) => {    
@@ -56,9 +56,5 @@ Schedule.findAll = (result) => {
         }
     });   
 };
-
-Schedule.sendInterviewReminder = () => {
-    let query = "SELECT * FROM schedule"
-}
 
 module.exports = Schedule;
