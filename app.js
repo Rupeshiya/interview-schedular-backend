@@ -73,8 +73,8 @@ app.post('/upload', (req, res, next) => {
 })
 
 // Scheduled tasks to be run on the server.
-const job = cron.schedule('*/10 * * * *', () => {
-    console.log('running a task every 10 minute');
+const job = cron.schedule('* * * * *', () => {
+    console.log('running a task every 1 minute');
     // schedule interview reminder
     let today = new Date();
     let dd = String(today.getDate()).padStart(2, '0');
@@ -88,34 +88,19 @@ const job = cron.schedule('*/10 * * * *', () => {
 
     today = yyyy + '-' + mm + '-' + dd;
     currentTime = hr + ":" + mn + ":" + ":" + ss;
-    let query = `SELECT * FROM schedule WHERE date = "${today}"`;
+    let query = `SELECT * FROM schedule AS sc WHERE date = "${today}" 
+                 AND (SELECT TIMEDIFF(sc.start, "${currentTime}") = "00:10:00")`;
+    
     dbConn.query(query, (err, data) => {
-        // to access RowDataPacket
-        data = JSON.parse(JSON.stringify(data))
-        
-        // iterate over today's interviews 
-        data.forEach((schedule) => {
-          // calculate time diff from currentTime
-          let timeDiffQuery = `SELECT TIMEDIFF("${schedule.start}", "${currentTime}") AS minute`;
-          
-          // filter out the schedule which is going to be scheduled in 10 mins
-          dbConn.query(timeDiffQuery, (err, response) => {
-              // access RowDataPacket
-              response = JSON.parse(JSON.stringify(response))
-              let temp = response[0].minute;
-              let minArr = temp.split(":");
-              let min = minArr[1];
-              let hr = minArr[0];
-
-              // discard the prev period data 
-              if((Math.sign(hr) == -1 || Math.sign(hr) == -0) && min == 01) {
-                console.log('Sending interview remainder email');
-                // send reminder email 
-                let sub = "Interview reminder";
-                emailer.sendEmail(schedule, sub);
-              }
-          })
-        })
+      // to access RowDataPacket
+      data = JSON.parse(JSON.stringify(data))
+      
+      // iterate over today's interviews 
+      data.forEach((schedule) => {
+        console.log('schedule ', schedule);
+        let sub = "Interview reminder";
+        emailer.sendEmail(schedule, sub);
+      })
     })
 });
 
