@@ -14,18 +14,18 @@ module.exports = {
           message: 'Please provide all required field'
         });
       }
-      await Schedule.create(new_schedule, (err, scheduleId) => {
-        if (err) { 
-          return res.status(HTTP_STATUS.BAD_REQUEST).json({
-            err: err
-          });
-        }
-        return res.status(HTTP_STATUS.CREATED).json({ 
-          success: true,
-          message: "Interview scheduled successfully!",
-          data: scheduleId
-        });
-      });
+      Schedule.create(new_schedule, (err, scheduleId) => {
+       if (err) {
+         return res.status(HTTP_STATUS.BAD_REQUEST).json({
+           err: err
+         });
+       }
+       return res.status(HTTP_STATUS.CREATED).json({
+         success: true,
+         message: "Interview scheduled successfully!",
+         data: scheduleId
+       });
+     });
    } catch(err) {
      console.log(err);
    }
@@ -34,16 +34,16 @@ module.exports = {
   // get all interview scheduled by admins
   getAllScheduledInterview: async (req, res, next) => {
     try {
-      await Schedule.findAll((err, data) => {
-        if(err) {
+      Schedule.findAll((err, data) => {
+        if (err) {
           return res.status(HTTP_STATUS.BAD_REQUEST).json({
             err: err
-          })
+          });
         }
         return res.status(HTTP_STATUS.OK).json({
           success: true,
           interviews: data
-        })
+        });
       })
     } catch (err) {
       console.log(err);
@@ -54,8 +54,8 @@ module.exports = {
   getScheduledInterviewById: async (req, res, next) => {
     try {
       const { id } = req.params;
-      await Schedule.findById(id, (err, data) => {
-        if(err) {
+      Schedule.findById(id, (err, data) => {
+        if (err) {
           return res.status(HTTP_STATUS.BAD_REQUEST).json({
             err: err
           });
