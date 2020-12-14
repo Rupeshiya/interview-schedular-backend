@@ -15,18 +15,18 @@ const dbConn = require('./utils/connect');
 const emailer = require('./utils/mail');
 const Formidable = require('formidable');
 const cron = require("node-cron");
-
+const cloudConfig = require('./config/cloudinary');
 const cloudinary = require("cloudinary");
+
 cloudinary.config({
-    cloud_name: 'devilhack',
-    api_key: '583496858434235',
-    api_secret: 'OmKipCSKDnHol4ur-fFTbo07XZw'
+    cloud_name: cloudConfig.cloud_name,
+    api_key: cloudConfig.api_key,
+    api_secret: cloudConfig.api_secret
 });
 
 
 app.use(cors());
 app.use(bodyParser.json({ limit: '200mb' }))
-app.use(cookieParser())
 
 // app logger (for debugging)
 morgan.token('data', (req, res) => {
@@ -53,8 +53,10 @@ app.get('/test', (req, res) => {
   })
 })
 
+// ADMIN ROUTE
 app.use('/admin', adminRouter)
 
+// UPLOAD RESUME ROUTE
 app.post('/upload', (req, res, next) => {
   // parse a file upload
     const form = new Formidable();
@@ -114,10 +116,6 @@ app.use(function (req, res, next) {
 
 // error handler
 app.use(function (err, req, res, next) {
-  // set locals, only providing error in development
-  res.locals.message = err.message
-  res.locals.error = req.app.get('env') === 'development' ? err : {}
-
   // To include winston logging (Error)
   winston.error(
     `${err.status || 500} - ${err.message} - ${req.originalUrl} - ${req.method} - ${req.ip} - ${req.body}`
